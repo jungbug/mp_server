@@ -1,0 +1,2 @@
+App.js <- 얘가 Front Main 코드
+나머지는 App.js 이전에 테스트해보던 코드

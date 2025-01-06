@@ -1,0 +1,83 @@
+.App {
+  text-align: center;
+  background-color: #ffeff1;
+  min-height: 100vh;
+}
+
+.control_panel {
+  display: flex;
+  float: inline-end;
+  min-height: 90vh;
+  margin-top: 2.5vh;
+  margin-right: 2.5vh;
+  padding-top: 2.5vh;
+  padding-bottom: 2.5vh;
+  padding-left: 2.5vh;
+  padding-right: 2.5vh;
+  align-items: flex-start;
+  flex-direction: column;
+  box-shadow: 0 0 20px 6px #00000054;
+  border-radius: 20px;
+  position: fixed;
+  right: 0;
+}
+
+.control_panel>*{
+  padding-top: 1vh;
+  padding-bottom: 1vh;
+}
+
+.control_panel>.ant-upload-wrapper>.ant-upload {
+  height: 15vh;
+  width: 10vw;
+}
+
+.imagebox{
+  overflow-y:auto;
+  height:56vh;
+  width:10vw;
+}
+
+.imagebox>*{
+  padding-top: 1vh;
+  padding-bottom: 1vh;
+}
+
+.start_btn {
+  width: 10vw;
+  font-size:1.2em;
+  font-weight: 700;
+  height: 5vh;
+}
+
+.video_panel {
+  min-height: 100vh;
+  width: 85vw;
+}
+
+.videobox{
+  padding: 2vh;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.mainCard {
+  background-color: #fff6f6;
+  width: 25vw;
+  height: 30vh;
+  margin-bottom: 2vh;
+  margin-right: 2vh;
+}
+
+.mainCard .ant-card-body{
+  height: 100%;
+}
+
+.video-player {
+  width: 100%;      /* 카드에 맞게 비율 유지 */
+  height: auto;     /* 원본 비율 유지 */
+  max-height: 500px; /* 최대 높이 제한 */
+  border-radius: 10px; /* 둥근 모서리 추가 (선택사항) */
+}
+
+
