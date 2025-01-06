@@ -11,9 +11,9 @@ import React, { useRef, useState, createRef, useEffect } from 'react';
 
 const serverAddresses = [
   // 여기 바꾸셈 서버주소
-  "http://127.0.0.1:4001",
-  "http://127.0.0.1:4004",
-  "http://127.0.0.1:4006",
+  "http://168.188.129.225:4001",
+  "http://168.188.129.225:4004",
+  "http://168.188.129.225:4006",
   // "http://127.0.0.1:4000",
   // "http://127.0.0.1:4000",
   // "http://127.0.0.1:4000",
