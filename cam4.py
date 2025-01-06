@@ -7,6 +7,7 @@ import numpy as np
 from ultralytics import YOLO
 import os
 from PIL import Image
+from flask_cors import CORS
 
 from deep_sort import nn_matching
 from deep_sort.detection import Detection
@@ -14,7 +15,7 @@ from deep_sort.tracker import Tracker
 from deep_sort import generate_detections as gdet
 
 app = Flask(__name__)
-
+CORS(app)
 # ==== 전역 변수 ====
 framesA = []         # 영상 A의 모든 프레임(JPEG 바이너리) 리스트
 current_frame_idx = 0  # 현재 몇 번째 프레임을 송출 중인지
@@ -54,27 +55,55 @@ def similar_id(dictionary, value, threshold=1e-5):
             
     return r
 
-def detect_person(img, conf_threshold=0.5, ret_coord=False):
-    result=det_model.cpu()(img, verbose=False)
-    # print('1')
-    boxes_out=np.array([np.concatenate([np.array(box.xywh[0])[:2]-np.array(box.xywh[0])[2:]/2,np.array(box.xywh[0])[2:]]) for box in result[0].boxes if box.cls==0 and box.conf>=conf_threshold])
-    conf_out=np.array([np.array(box.conf) for box in result[0].boxes if box.cls==0 and box.conf>=conf_threshold])
-    # print('2')
+# def detect_person(img, conf_threshold=0.5, ret_coord=False):
+#     result=det_model.cpu()(img, verbose=False)
+#     # print('1')
+#     boxes_out=np.array([np.concatenate([np.array(box.xywh[0])[:2]-np.array(box.xywh[0])[2:]/2,np.array(box.xywh[0])[2:]]) for box in result[0].boxes if box.cls==0 and box.conf>=conf_threshold])
+#     conf_out=np.array([np.array(box.conf) for box in result[0].boxes if box.cls==0 and box.conf>=conf_threshold])
+#     # print('2')
 
-    boxes=np.array([np.array([box.xyxyn[0][1],box.xyxyn[0][0],box.xyxyn[0][3],box.xyxyn[0][2]]) for box in result[0].boxes if box.cls==0 and box.conf>=conf_threshold])
-    # print('3')
+#     boxes=np.array([np.array([box.xyxyn[0][1],box.xyxyn[0][0],box.xyxyn[0][3],box.xyxyn[0][2]]) for box in result[0].boxes if box.cls==0 and box.conf>=conf_threshold])
+#     # print('3')
  
-    _img=tf.repeat(img[None], len(boxes), axis=0)
-    # print('4')
+#     _img=tf.repeat(img[None], len(boxes), axis=0)
+#     # print('4')
 
-    cropped_image=tf.image.crop_and_resize(_img, boxes, range(len(boxes)), (128,64))
+#     cropped_image=tf.image.crop_and_resize(_img, boxes, range(len(boxes)), (128,64))
     
+#     if ret_coord:
+#         # print('5')
+#         return tf.image.crop_and_resize(_img, boxes, range(len(boxes)), (128,64)), boxes_out, conf_out
+#     else:
+#         # print('6')
+#         return tf.image.crop_and_resize(_img, boxes, range(len(boxes)), (128,64))
+
+
+
+def detect_person(img, conf_threshold=0.5, ret_coord=False):
+    result = det_model(img)
+    boxes_out = np.array([
+        np.concatenate([
+            np.array(box.xywh[0])[:2] - np.array(box.xywh[0])[2:] / 2,
+            np.array(box.xywh[0])[2:]
+        ]) for box in result[0].boxes if box.cls == 0 and box.conf >= conf_threshold
+    ])
+    conf_out = np.array([box.conf[0] for box in result[0].boxes if box.cls == 0 and box.conf >= conf_threshold])
+
+    boxes = np.array([
+        [box.xyxyn[0][1], box.xyxyn[0][0], box.xyxyn[0][3], box.xyxyn[0][2]]
+        for box in result[0].boxes if box.cls == 0 and box.conf >= conf_threshold
+    ])
+
+    _img = tf.repeat(img[None], len(boxes), axis=0)
+
+    cropped_image = tf.image.crop_and_resize(_img, boxes, range(len(boxes)), (128, 64))
+
     if ret_coord:
-        # print('5')
-        return tf.image.crop_and_resize(_img, boxes, range(len(boxes)), (128,64)), boxes_out, conf_out
+        return cropped_image, boxes_out, conf_out
     else:
-        # print('6')
-        return tf.image.crop_and_resize(_img, boxes, range(len(boxes)), (128,64))
+        return cropped_image
+
+
 
 # objects={} # id 별 이미지 저장 
 # 딕셔너리(각 타겟 이미지) 안에 딕셔너리(id)
@@ -192,20 +221,20 @@ def make_target_list():
         
     target_list = []
     for i in sorted(os.listdir("./uploaded_images")):
-        # print(i)
+        print(i)
         try:
             target = cv2.imread("uploaded_images/" + i)[...,:3]
-            # print("sibal")
+            print("sibal")
             target_img=detect_person(target)[0]
             print(target_img.shape)
             target_list.append(target_img)
         except:
-            # print("except sibal ")
+            print("except sibal ")
             continue
     return target_list
 
 target_images = []
-target_images = make_target_list()
+ 
 # ==== AI 모델로 프레임 처리 ====
 def process_frame_with_ai(frame):
     global target_images
@@ -292,7 +321,7 @@ def process_frame_with_ai(frame):
 #------------------------------------------------------------------------------------------------
    # 추가 후보(교집합 혹은 전체) 계산
     additional_ids = get_additional_candidates(candidates_list, picked_id)
-    print("addition : ", additional_ids)
+    # print("addition : ", additional_ids)
     # --- BBox 색상 표시 ---
     #   - picked_id(초록)
     #   - additional_ids(노랑)
@@ -335,7 +364,7 @@ def generate_mjpeg():
         if current_frame_idx >= len(framesA):
             current_frame_idx = 0
 
-        time.sleep(1.0 / fps)
+        time.sleep(2.0 / fps)
 
 # ==== Flask 라우트 ====
 @app.route('/')
