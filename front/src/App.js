@@ -174,7 +174,8 @@ function App() {
           console.error("Error sending images to backend:", error);
           message.error("An error occurred while sending images.");
         });
-    };}
+      ;}
+    }
 
   // 이미지 전송 및 트래킹 시작
   const handleTracking = async () => {
